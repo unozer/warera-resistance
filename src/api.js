@@ -41,8 +41,3 @@ export const fetchRegions = async () => {
   const data = await fetchWithCache('https://api2.warera.io/trpc/region.getRegionsObject', 'warera_regions', CACHE_TTL.REGIONS);
   return data || {};
 };
-
-export const fetchCoalitions = async () => {
-  const data = await fetchWithCache('https://api2.warera.io/trpc/coalition.getCoalitionsObject', 'warera_coalitions', CACHE_TTL.COALITIONS);
-  return data || {};
-};

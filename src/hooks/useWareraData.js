@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchCountries, fetchRegions, fetchCoalitions } from '../api';
+import { fetchCountries, fetchRegions } from '../api';
 import { calculateResistanceTargets } from '../logic';
 
 const DEFAULT_CONFIG = {
@@ -27,13 +27,29 @@ export function useWareraData(countryId, config = {}) {
     async function loadData() {
       try {
         setLoading(true);
-        const [cList, rDict, coalDict] = await Promise.all([
+        const [cList, rDict] = await Promise.all([
           fetchCountries(), 
-          fetchRegions(),
-          fetchCoalitions()
+          fetchRegions()
         ]);
         
         cList.sort((a, b) => a.name.localeCompare(b.name));
+        
+        // Derive coalitions from countries
+        const coalDict = {};
+        cList.forEach(c => {
+          if (c.allianceId) {
+            if (!coalDict[c.allianceId]) {
+              coalDict[c.allianceId] = { _id: c.allianceId, name: `Coalizione (${c.name})`, members: [] };
+            }
+            coalDict[c.allianceId].members.push(c.name);
+          }
+        });
+        
+        // Refine coalition names based on members
+        Object.values(coalDict).forEach(coal => {
+            const topMembers = coal.members.slice(0, 3).join(", ");
+            coal.name = `Coalizione [${topMembers}${coal.members.length > 3 ? '...' : ''}]`;
+        });
         
         setCountries(cList);
         setRegions(rDict);
