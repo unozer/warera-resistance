@@ -20,10 +20,15 @@ export function SettingsPanel({ countries, coalitions, overrides, setOverrides }
   const manualCountries = overrides.manualCountries || {};
   const manualCoalitions = overrides.manualCoalitions || {};
 
+  const isRuleActive = (ruleKey, currentRules) => {
+    if (ruleKey === 'show_allied_held_by_me') return currentRules[ruleKey] === true;
+    return currentRules[ruleKey] !== false; // others default to true
+  };
+
   const toggleRule = (ruleKey) => {
     setOverrides(prev => {
       const currentRules = prev.rules || {};
-      const currentValue = currentRules[ruleKey] !== false; // true if true or undefined
+      const currentValue = isRuleActive(ruleKey, currentRules);
       return {
         ...prev,
         rules: {
@@ -74,7 +79,7 @@ export function SettingsPanel({ countries, coalitions, overrides, setOverrides }
     });
   };
 
-  const isChecked = (key) => rules[key] !== false; // true by default
+  const isChecked = (key) => isRuleActive(key, rules);
 
   const renderSection = (bucket, title, badgeClass, labels, rulesConfig) => {
     const bucketCountries = Object.entries(manualCountries).filter(([id, b]) => b === bucket || (bucket === 'alleato' && b === 'amico') || (bucket === 'nemico comune' && b === 'nemico del nemico'));
@@ -170,25 +175,10 @@ export function SettingsPanel({ countries, coalitions, overrides, setOverrides }
     <div className="settings-panel">
       <h2>Impostazioni Diplomazia</h2>
 
-      <div className="settings-section">
-        <div className="settings-section-header" style={{ marginBottom: '1rem' }}>
-          <h3>Filtri Globali</h3>
-        </div>
-        <div className="settings-block">
-          <label className="settings-rule-label">
-            <input 
-              type="checkbox" 
-              checked={isChecked('show_allied_held_by_me')} 
-              onChange={() => toggleRule('show_allied_held_by_me')} 
-            />
-            Mostra territori Alleati occupati dalla nostra Nazione (Es. Slovenia occupata dall'Italia)
-          </label>
-        </div>
-      </div>
-
       {renderSection('alleato', 'Alleati', 'badge-alleato', { alliance: 'Alleanze Alleate', country: 'Nazioni Alleate' }, [
         { key: 'amici_dp', label: 'Patti Difensivi' },
-        { key: 'amici_coalition', label: 'Stessa Alleanza' }
+        { key: 'amici_coalition', label: 'Stessa Alleanza' },
+        { key: 'show_allied_held_by_me', label: 'Mostra regioni alleate occupate dalla nazione selezionata' }
       ])}
       
       {renderSection('nemico', 'Nemici', 'badge-nemico', { alliance: 'Alleanze Nemiche', country: 'Nazioni Nemiche' }, [
