@@ -24,30 +24,30 @@ const RegionRow = ({ reg }) => (
         <span className="res-percent-bar">
           <span className="res-percent-fill" style={{ width: `${Math.min(100, Math.max(0, reg.percent))}%` }} />
           <span className="res-percent-text">{reg.percent}%</span>
+          {reg.manca > 0 && <span className="res-manca-pts-inside">(-{reg.manca})</span>}
         </span>
-        {reg.manca > 0 && <span className="res-manca-pts">(-{reg.manca})</span>}
       </div>
     </td>
     <td>
       <div className="country-cell">
-        <Flag code={reg.ownerCode} title={reg.owner} style={{ width: '24px', height: '18px', borderRadius: '3px' }} />
-        <div className="country-info">
+        <div className="country-name-row">
+          <Flag code={reg.ownerCode} title={reg.owner} style={{ width: '18px', height: '13.5px', borderRadius: '2px', marginRight: '6px' }} />
           <a href={`https://app.warera.io/country/${reg.ownerId}`} target="_blank" rel="noreferrer" className="country-name external-link">
             {reg.owner}
           </a>
-          <span className={`badge ${getBadgeClass(reg.ownerRel)}`}>{reg.ownerRel}</span>
         </div>
+        <span className={`badge ${getBadgeClass(reg.ownerRel)}`}>{reg.ownerRel}</span>
       </div>
     </td>
     <td>
       <div className="country-cell">
-        <Flag code={reg.holderCode} title={reg.holder} style={{ width: '24px', height: '18px', borderRadius: '3px' }} />
-        <div className="country-info">
+        <div className="country-name-row">
+          <Flag code={reg.holderCode} title={reg.holder} style={{ width: '18px', height: '13.5px', borderRadius: '2px', marginRight: '6px' }} />
           <a href={`https://app.warera.io/country/${reg.holderId}`} target="_blank" rel="noreferrer" className="country-name external-link">
             {reg.holder}
           </a>
-          <span className={`badge ${getBadgeClass(reg.holderRel)}`}>{reg.holderRel}</span>
         </div>
+        <span className={`badge ${getBadgeClass(reg.holderRel)}`}>{reg.holderRel}</span>
       </div>
     </td>
   </tr>

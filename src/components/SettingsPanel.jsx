@@ -76,7 +76,7 @@ export function SettingsPanel({ countries, coalitions, overrides, setOverrides }
 
   const isChecked = (key) => rules[key] !== false; // true by default
 
-  const renderSection = (bucket, title, badgeClass, rulesConfig) => {
+  const renderSection = (bucket, title, badgeClass, labels, rulesConfig) => {
     const bucketCountries = Object.entries(manualCountries).filter(([id, b]) => b === bucket || (bucket === 'alleato' && b === 'amico'));
     const bucketCoalitions = Object.entries(manualCoalitions).filter(([id, b]) => b === bucket || (bucket === 'alleato' && b === 'amico'));
 
@@ -105,7 +105,7 @@ export function SettingsPanel({ countries, coalitions, overrides, setOverrides }
         )}
 
         <div className="settings-block">
-          <h4>Alleanze {title} (Manuali)</h4>
+          <h4>{labels.alliance}</h4>
           <ul className="settings-manual-list">
             {bucketCoalitions.map(([coId]) => (
               <li key={coId}>
@@ -113,7 +113,7 @@ export function SettingsPanel({ countries, coalitions, overrides, setOverrides }
                 <button className="settings-btn-clear" onClick={() => removeManualCoalition(coId)}>X</button>
               </li>
             ))}
-            {bucketCoalitions.length === 0 && <li className="settings-empty-li">Nessuna alleanza aggiunta manualmente.</li>}
+            {bucketCoalitions.length === 0 && <li className="settings-empty-li">Aggiungi alleanza manualmente.</li>}
           </ul>
           <div className="settings-add-row">
             <select 
@@ -131,7 +131,7 @@ export function SettingsPanel({ countries, coalitions, overrides, setOverrides }
         </div>
 
         <div className="settings-block">
-          <h4>Nazioni {title} (Manuali)</h4>
+          <h4>{labels.country}</h4>
           <ul className="settings-manual-list">
             {bucketCountries.map(([cId]) => {
               const c = countries.find(x => x._id === cId);
@@ -146,7 +146,7 @@ export function SettingsPanel({ countries, coalitions, overrides, setOverrides }
                 </li>
               );
             })}
-            {bucketCountries.length === 0 && <li className="settings-empty-li">Nessuna nazione aggiunta manualmente.</li>}
+            {bucketCountries.length === 0 && <li className="settings-empty-li">Aggiungi nazione manualmente.</li>}
           </ul>
           <div className="settings-add-row">
             <select 
@@ -170,22 +170,22 @@ export function SettingsPanel({ countries, coalitions, overrides, setOverrides }
     <div className="settings-panel">
       <h2>Impostazioni Diplomazia</h2>
 
-      {renderSection('alleato', 'Alleati', 'badge-alleato', [
+      {renderSection('alleato', 'Alleati', 'badge-alleato', { alliance: 'Alleanze Alleate', country: 'Nazioni Alleate' }, [
         { key: 'amici_dp', label: 'Patti Difensivi' },
         { key: 'amici_coalition', label: 'Stessa Alleanza' }
       ])}
       
-      {renderSection('nemico', 'Nemici', 'badge-nemico', [
+      {renderSection('nemico', 'Nemici', 'badge-nemico', { alliance: 'Alleanze Nemiche', country: 'Nazioni Nemiche' }, [
         { key: 'nemici_wars', label: 'Guerre Attive' },
         { key: 'nemici_ne', label: 'Nemico Giurato' }
       ])}
       
-      {renderSection('nemico del nemico', 'Nemici dei Nemici', 'badge-nemico-del-nemico', [
+      {renderSection('nemico del nemico', 'Nemici dei Nemici', 'badge-nemico-del-nemico', { alliance: 'Alleanze Nemiche dei Nemici', country: 'Nazioni Nemiche dei Nemici' }, [
         { key: 'eoe_wars', label: 'Nazioni in guerra contro i nostri Nemici' },
         { key: 'eoe_ne', label: 'Nazioni aventi i nostri Nemici come Nemico Giurato' }
       ])}
       
-      {renderSection('neutrale', 'Neutrali', 'badge-neutrale', null)}
+      {renderSection('neutrale', 'Neutrali', 'badge-neutrale', { alliance: 'Alleanze Neutrali', country: 'Nazioni Neutrali' }, null)}
     </div>
   );
 }
