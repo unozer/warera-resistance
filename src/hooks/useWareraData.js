@@ -4,7 +4,6 @@ import { calculateResistanceTargets } from '../logic';
 
 const DEFAULT_CONFIG = {
   rules: {
-    amici_allies: true,
     amici_dp: true,
     amici_coalition: true,
     nemici_wars: true,

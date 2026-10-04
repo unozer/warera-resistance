@@ -13,9 +13,6 @@ export function diplomaticSets(homeId, countriesDict, config = {}) {
     let eoe = new Set();
 
     // 1. Automatic Rules
-    if (rules.amici_allies !== false) {
-        (home.allies || []).forEach(p => friends.add(p));
-    }
     if (rules.amici_dp !== false) {
         (home.defensivePacts || []).forEach(p => friends.add(p));
     }

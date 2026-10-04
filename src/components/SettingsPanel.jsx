@@ -175,7 +175,6 @@ export function SettingsPanel({ countries, coalitions, overrides, setOverrides }
       </p>
 
       {renderSection('amico', 'Amici', 'badge-amico', [
-        { key: 'amici_allies', label: 'Alleanze Dirette' },
         { key: 'amici_dp', label: 'Patti Difensivi' },
         { key: 'amici_coalition', label: 'Stessa Coalizione' }
       ])}
