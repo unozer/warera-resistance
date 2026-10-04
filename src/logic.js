@@ -46,7 +46,7 @@ export function diplomaticSets(homeId, countriesDict, config = {}) {
     Object.entries(manualCoalitions).forEach(([coalId, bucket]) => {
         Object.values(countriesDict).forEach(c => {
             if (c.allianceId === coalId) {
-                if (bucket === 'amico') friends.add(c._id);
+                if (bucket === 'alleato' || bucket === 'amico') friends.add(c._id);
                 if (bucket === 'nemico') enemies.add(c._id);
                 if (bucket === 'nemico del nemico') eoe.add(c._id);
                 if (bucket === 'neutrale') {
@@ -58,7 +58,7 @@ export function diplomaticSets(homeId, countriesDict, config = {}) {
 
     // 3. Manual Countries (Highest Precedence)
     Object.entries(manualCountries).forEach(([cId, bucket]) => {
-        if (bucket === 'amico') { friends.add(cId); enemies.delete(cId); eoe.delete(cId); }
+        if (bucket === 'alleato' || bucket === 'amico') { friends.add(cId); enemies.delete(cId); eoe.delete(cId); }
         if (bucket === 'nemico') { enemies.add(cId); friends.delete(cId); eoe.delete(cId); }
         if (bucket === 'nemico del nemico') { eoe.add(cId); friends.delete(cId); enemies.delete(cId); }
         if (bucket === 'neutrale') { friends.delete(cId); enemies.delete(cId); eoe.delete(cId); }
@@ -79,7 +79,7 @@ export function getRelationshipLabel(countryId, homeId, { friends, enemies, eoe 
     const manual = config.manualCountries || {};
     if (manual[countryId]) return manual[countryId];
     
-    if (friends.has(countryId)) return "amico";
+    if (friends.has(countryId)) return "alleato";
     if (enemies.has(countryId)) return "nemico";
     if (eoe.has(countryId)) return "nemico del nemico";
     return "neutrale";
@@ -89,7 +89,7 @@ export function getRelationshipLabel(countryId, homeId, { friends, enemies, eoe 
  * Validates if a region should be pushed based on strict inclusion rules.
  */
 function isRegionEligible(ownerRel, holderRel) {
-    if (holderRel === "amico") return false;
+    if (holderRel === "alleato") return false;
     if (ownerRel === "nemico" || ownerRel === "casa") return false;
     if (ownerRel === "neutrale" && holderRel !== "nemico") return false;
     if (ownerRel === "nemico del nemico" && holderRel === "nemico del nemico") return false;
@@ -97,7 +97,7 @@ function isRegionEligible(ownerRel, holderRel) {
 }
 
 function determineTier(ownerRel) {
-    if (ownerRel === "amico") return 1;
+    if (ownerRel === "alleato") return 1;
     if (ownerRel === "nemico del nemico") return 2;
     return 3;
 }

@@ -4,7 +4,7 @@ import { Flag } from './Flag';
 
 const getBadgeClass = (rel) => {
   if (rel === 'casa') return 'badge-casa';
-  if (rel === 'amico') return 'badge-amico';
+  if (rel === 'alleato') return 'badge-alleato';
   if (rel === 'nemico') return 'badge-nemico';
   if (rel === 'nemico del nemico') return 'badge-nemico-del-nemico';
   return 'badge-neutrale';
