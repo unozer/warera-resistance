@@ -110,6 +110,12 @@ body {
   font-weight: 600;
   font-size: 0.85rem;
   text-transform: uppercase;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.data-table th:hover {
+  color: var(--text-main);
 }
 
 .text-center {

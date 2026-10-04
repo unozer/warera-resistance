@@ -11,9 +11,14 @@ const REL_COLORS = {
   neutrale: '#64748b',
 };
 
+const FistIcon = () => (
+  <svg viewBox="0 0 448 512" fill="currentColor" width="28" height="28" style={{ verticalAlign: 'middle', marginRight: '8px' }}>
+    <path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48v86.1c0 10.6-9.1 18.9-19.6 17.9l-26.9-2.6c-20.3-2-38.6 12-41.5 32.2l-4.5 31.4C111 210.1 82.5 224 53.9 224H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h224c88.4 0 160-71.6 160-160V144c0-26.5-21.5-48-48-48h-11.4c-8.9 0-16.6-6.4-18.4-15l-4.7-22.1c-2.4-11.3 6.1-20.9 16.9-20.9H384c26.5 0 48-21.5 48-48s-21.5-48-48-48h-80z"/>
+  </svg>
+);
+
 const RegionRow = ({ reg }) => (
-  <tr className={`res-row res-fascia-${reg.fascia || 'none'}`}>
-    <td className="text-center">{reg.fascia ? `Fascia ${reg.fascia}` : '-'}</td>
+  <tr className="res-row">
     <td><b>{reg.name}</b></td>
     <td className="res-manca">
       <span className="res-percent-bar">
@@ -39,6 +44,8 @@ function App() {
   const [countryId, setCountryId] = useState('6813b6d446e731854c7ac7a2'); // Italy default
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  const [sortConfig, setSortConfig] = useState(null);
 
   useEffect(() => {
     async function loadData() {
@@ -46,7 +53,6 @@ function App() {
         setLoading(true);
         const [cList, rDict] = await Promise.all([fetchCountries(), fetchRegions()]);
         
-        // Sort countries alphabetically
         cList.sort((a, b) => a.name.localeCompare(b.name));
         
         setCountries(cList);
@@ -64,32 +70,54 @@ function App() {
     setCountryId(e.target.value);
   };
 
-  let targets = { pushing: [], ready: [], warning: [] };
+  const requestSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIndicator = (key) => {
+    if (!sortConfig || sortConfig.key !== key) return '';
+    return sortConfig.direction === 'ascending' ? ' ▲' : ' ▼';
+  };
+
+  let targets = { pushing: [] };
   if (!loading && !error && countries.length > 0) {
     const countriesDict = countries.reduce((acc, c) => ({ ...acc, [c._id]: c }), {});
-    targets = calculateResistanceTargets(regions, countriesDict, countryId);
-  }
+    const calculated = calculateResistanceTargets(regions, countriesDict, countryId);
+    
+    let sortableItems = [...calculated.pushing];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
+        
+        // Handle sorting text (case insensitive)
+        if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+        if (typeof bValue === 'string') bValue = bValue.toLowerCase();
 
-  const activeCountry = countries.find(c => c._id === countryId);
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    targets.pushing = sortableItems;
+  }
 
   return (
     <div className="container">
       <header className="header">
-        <h1>🔥 WarEra - Resistenza</h1>
-        <p>Strumento strategico per trovare le regioni in cui conviene contribuire alla resistenza.</p>
+        <h1>
+          <FistIcon />
+          WarEra RESISTANCE
+        </h1>
       </header>
-
-      <div className="card filters">
-        <label>
-          <span className="label-text">Seleziona la tua nazione:</span>
-          <select value={countryId} onChange={handleCountryChange} disabled={loading}>
-            {!countryId && <option value="">Scegli una nazione...</option>}
-            {countries.map(c => (
-              <option key={c._id} value={c._id}>{c.name}</option>
-            ))}
-          </select>
-        </label>
-      </div>
 
       <main className="main-content">
         {loading && <div className="state-message">Caricamento dati in corso...</div>}
@@ -97,24 +125,40 @@ function App() {
 
         {!loading && !error && (
           <div className="card">
-            <h3>🏹 Dove Spingere</h3>
-            <p className="subtitle">
-              Le regioni con barra parziale, in ordine di priorità (Amici, poi Nemici dei nemici, infine Neutrali) e di vicinanza al 100%. 
-              Le regioni dove conviene spendere energia.
-            </p>
+            
+            <div className="filters">
+              <label>
+                <span className="label-text">Nazione:</span>
+                <select value={countryId} onChange={handleCountryChange} disabled={loading}>
+                  {!countryId && <option value="">Scegli una nazione...</option>}
+                  {countries.map(c => (
+                    <option key={c._id} value={c._id}>{c.name}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
             {targets.pushing.length === 0 ? (
-              <div className="state-message empty">Nessuna regione utile trovata al momento.</div>
+              <div className="state-message empty" style={{ marginTop: '2rem' }}>
+                Nessuna regione utile trovata al momento.
+              </div>
             ) : (
-              <div className="table-responsive">
+              <div className="table-responsive" style={{ marginTop: '2rem' }}>
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th className="text-center">Fascia</th>
-                      <th>Regione</th>
-                      <th>Manca</th>
-                      <th>Chi la riprende</th>
-                      <th>Chi la tiene</th>
+                      <th onClick={() => requestSort('name')} style={{ cursor: 'pointer' }}>
+                        Regione{getSortIndicator('name')}
+                      </th>
+                      <th onClick={() => requestSort('manca')} style={{ cursor: 'pointer' }}>
+                        Manca{getSortIndicator('manca')}
+                      </th>
+                      <th onClick={() => requestSort('owner')} style={{ cursor: 'pointer' }}>
+                        Chi la riprende{getSortIndicator('owner')}
+                      </th>
+                      <th onClick={() => requestSort('holder')} style={{ cursor: 'pointer' }}>
+                        Chi la tiene{getSortIndicator('holder')}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
