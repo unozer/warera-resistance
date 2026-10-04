@@ -10,9 +10,9 @@
   --c8: #effee1;
 
   /* App Variables */
-  --bg-color: var(--c1);
-  --card-bg: var(--c2);
-  --border-color: var(--c3);
+  --bg-color: #0a0005; /* Deep, dark Material-style base */
+  --card-bg: var(--c1); /* Elevated surface is slightly lighter */
+  --border-color: var(--c2);
   --border-hover: var(--c4);
   --brand-color: var(--c5);
   --text-main: var(--c8);
@@ -53,16 +53,15 @@ body {
   text-transform: uppercase;
   letter-spacing: 2px;
   font-size: 2rem;
-  text-shadow: 2px 2px 0px var(--c1);
 }
 
 .card {
   background-color: var(--card-bg);
-  border: 2px solid var(--border-color);
-  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: 4px 4px 0px var(--c1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
 }
 
 .filters {

@@ -40,10 +40,6 @@ function App() {
           </div>
         )}
       </main>
-
-      <footer className="footer">
-        I dati vengono scaricati live tramite le API pubbliche di WarEra.
-      </footer>
     </div>
   );
 }
