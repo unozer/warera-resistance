@@ -1,0 +1,64 @@
+.country-select-container {
+  position: relative;
+  width: 250px;
+  user-select: none;
+}
+
+.country-select-container.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.country-select-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.country-select-value {
+  display: flex;
+  align-items: center;
+}
+
+.country-select-arrow {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.country-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 50;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+}
+
+.country-select-option {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.country-select-option:hover {
+  background: var(--border-color);
+}
+
+.country-select-option.selected {
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--brand-color);
+}
