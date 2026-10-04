@@ -109,8 +109,9 @@ export function calculateResistanceTargets(regionsDict, countriesDict, homeId, c
         
         // Push only if: owner is amico AND holder is nemico (or nemico del nemico)
         const isPushable = ownerRel === "amico" && (holderRel === "nemico" || holderRel === "nemico del nemico");
+        const isNotFull = cur < top;
 
-        if (isPushable) {
+        if (isPushable && isNotFull) {
             const percent = top > 0 ? ((cur / top) * 100).toFixed(1) : 0;
             candidates.push({
                 regionId: region._id,
