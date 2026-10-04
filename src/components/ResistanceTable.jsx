@@ -3,11 +3,11 @@ import { useSortableTable } from '../hooks/useSortableTable';
 import { Flag } from './Flag';
 
 const REL_COLORS = {
-  casa: '#e2e8f0',
-  amico: '#10b981',
-  nemico: '#ef4444',
-  'nemico del nemico': '#f59e0b',
-  neutrale: '#64748b',
+  casa: 'var(--text-main)',
+  amico: 'var(--success-color)',
+  nemico: 'var(--danger-color)',
+  'nemico del nemico': 'var(--warning-color)',
+  neutrale: '#ffffff',
 };
 
 const RegionRow = ({ reg }) => (
