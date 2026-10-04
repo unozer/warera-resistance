@@ -19,7 +19,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [overrides, setOverrides] = useLocalStorage('warera_overrides', {});
   
-  const { countries, loading, error, targets } = useWareraData(countryId, overrides);
+  const { countries, coalitions, loading, error, targets } = useWareraData(countryId, overrides);
 
   return (
     <div className="container">
@@ -61,6 +61,7 @@ function App() {
             {showSettings ? (
               <SettingsPanel 
                 countries={countries} 
+                coalitions={coalitions}
                 homeId={countryId} 
                 overrides={overrides} 
                 setOverrides={setOverrides} 

@@ -21,13 +21,17 @@ export function SettingsPanel({ countries, coalitions, overrides, setOverrides }
   const manualCoalitions = overrides.manualCoalitions || {};
 
   const toggleRule = (ruleKey) => {
-    setOverrides(prev => ({
-      ...prev,
-      rules: {
-        ...(prev.rules || {}),
-        [ruleKey]: prev.rules ? !prev.rules[ruleKey] : false // Defaults to true if undefined
-      }
-    }));
+    setOverrides(prev => {
+      const currentRules = prev.rules || {};
+      const currentValue = currentRules[ruleKey] !== false; // true if true or undefined
+      return {
+        ...prev,
+        rules: {
+          ...currentRules,
+          [ruleKey]: !currentValue
+        }
+      };
+    });
   };
 
   const addManualCountry = (bucket) => {
