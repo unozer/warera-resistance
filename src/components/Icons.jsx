@@ -1,7 +1,14 @@
 import React from 'react';
 
 export const FistIcon = () => (
-  <svg viewBox="0 0 448 512" fill="currentColor" width="28" height="28" style={{ verticalAlign: 'middle', marginRight: '8px' }}>
-    <path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48v86.1c0 10.6-9.1 18.9-19.6 17.9l-26.9-2.6c-20.3-2-38.6 12-41.5 32.2l-4.5 31.4C111 210.1 82.5 224 53.9 224H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h224c88.4 0 160-71.6 160-160V144c0-26.5-21.5-48-48-48h-11.4c-8.9 0-16.6-6.4-18.4-15l-4.7-22.1c-2.4-11.3 6.1-20.9 16.9-20.9H384c26.5 0 48-21.5 48-48s-21.5-48-48-48h-80z"/>
+  <svg 
+    viewBox="0 -1 14 14" 
+    fill="currentColor" 
+    width="28" 
+    height="28" 
+    style={{ verticalAlign: 'middle', marginRight: '10px' }}
+    shapeRendering="crispEdges"
+  >
+    <path d="M2 0h2v1H2z M2 1h2v1H2z M5 1h2v1H5z M2 2h2v1H2z M5 2h2v1H5z M8 2h2v1H8z M2 3h2v1H2z M5 3h2v1H5z M8 3h2v1H8z M11 3h2v1H11z M2 4h2v1H2z M5 4h2v1H5z M8 4h2v1H8z M11 4h2v1H11z M1 5h12v1H1z M1 6h12v1H1z M1 7h8v1H1z M11 7h2v1H11z M1 8h6v1H1z M9 8h4v1H9z M1 9h4v1H1z M7 9h6v1H7z M1 10h12v1H1z M2 11h10v1H2z" />
   </svg>
 );
