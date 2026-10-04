@@ -24,7 +24,7 @@ const RegionRow = ({ reg }) => (
         <span className="res-percent-bar">
           <span className="res-percent-fill" style={{ width: `${Math.min(100, Math.max(0, reg.percent))}%` }} />
           <span className="res-percent-text">{reg.percent}%</span>
-          {reg.manca > 0 && <span className="res-manca-pts-inside">(-{reg.manca})</span>}
+          {reg.manca > 0 && <span className="res-manca-pts-inside">-{reg.manca}</span>}
         </span>
       </div>
     </td>
