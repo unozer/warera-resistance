@@ -12,7 +12,13 @@ const getBadgeClass = (rel) => {
 
 const RegionRow = ({ reg }) => (
   <tr className="res-row">
-    <td><b style={{ color: 'var(--text-main)' }}>{reg.name}</b></td>
+    <td>
+      <b>
+        <a href={`https://play.warera.com/region/${reg.regionId}`} target="_blank" rel="noreferrer" className="external-link">
+          {reg.name}
+        </a>
+      </b>
+    </td>
     <td>
       <div className="res-manca">
         <span className="res-percent-bar">
@@ -26,7 +32,9 @@ const RegionRow = ({ reg }) => (
       <div className="country-cell">
         <Flag code={reg.ownerCode} title={reg.owner} style={{ width: '24px', height: '18px', borderRadius: '3px' }} />
         <div className="country-info">
-          <span className="country-name">{reg.owner}</span>
+          <a href={`https://play.warera.com/country/${reg.ownerId}`} target="_blank" rel="noreferrer" className="country-name external-link">
+            {reg.owner}
+          </a>
           <span className={`badge ${getBadgeClass(reg.ownerRel)}`}>{reg.ownerRel}</span>
         </div>
       </div>
@@ -35,7 +43,9 @@ const RegionRow = ({ reg }) => (
       <div className="country-cell">
         <Flag code={reg.holderCode} title={reg.holder} style={{ width: '24px', height: '18px', borderRadius: '3px' }} />
         <div className="country-info">
-          <span className="country-name">{reg.holder}</span>
+          <a href={`https://play.warera.com/country/${reg.holderId}`} target="_blank" rel="noreferrer" className="country-name external-link">
+            {reg.holder}
+          </a>
           <span className={`badge ${getBadgeClass(reg.holderRel)}`}>{reg.holderRel}</span>
         </div>
       </div>

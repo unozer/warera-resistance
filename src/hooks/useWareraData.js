@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { fetchCountries, fetchRegions } from '../api';
 import { calculateResistanceTargets } from '../logic';
 
-export function useWareraData(countryId) {
+export function useWareraData(countryId, overrides = {}) {
   const [countries, setCountries] = useState([]);
   const [regions, setRegions] = useState({});
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ export function useWareraData(countryId) {
   let targets = { pushing: [] };
   if (!loading && !error && countries.length > 0) {
     const countriesDict = countries.reduce((acc, c) => ({ ...acc, [c._id]: c }), {});
-    targets = calculateResistanceTargets(regions, countriesDict, countryId);
+    targets = calculateResistanceTargets(regions, countriesDict, countryId, overrides);
   }
 
   return { countries, loading, error, targets };

@@ -208,3 +208,154 @@ body {
 .badge-nemico { background: var(--danger-bg); color: var(--danger-color); border: 1px solid rgba(239,68,68,0.2); }
 .badge-nemico-del-nemico { background: var(--warning-bg); color: var(--warning-color); border: 1px solid rgba(245,158,11,0.2); }
 .badge-neutrale { background: var(--neutral-bg); color: var(--neutral-color); border: 1px solid rgba(203,213,225,0.2); }
+
+/* Settings Panel & Top Bar */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.btn-icon {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.btn-icon:hover {
+  color: var(--text-main);
+  border-color: var(--border-hover);
+}
+
+.btn-icon.active {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--brand-color);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.settings-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.settings-panel {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px dashed var(--border-color);
+}
+
+.settings-panel h2 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.settings-panel .subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+}
+
+.settings-section {
+  margin-bottom: 2.5rem;
+}
+
+.settings-section-header {
+  margin-bottom: 1rem;
+}
+
+.settings-desc {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.settings-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 0.75rem;
+}
+
+.settings-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.9rem;
+  padding: 1rem;
+  background: var(--bg-color);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.settings-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.settings-item:hover {
+  border-color: var(--border-hover);
+}
+
+.settings-item-country {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.settings-override-select {
+  width: 100%;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.4rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.override-badge {
+  font-size: 0.7rem;
+  color: var(--warning-color);
+  font-weight: bold;
+  margin-left: auto;
+}
+
+.settings-btn-clear {
+  background: var(--danger-bg);
+  color: var(--danger-color);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 0.3rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.settings-btn-clear:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+.external-link {
+  color: inherit;
+  text-decoration: none;
+}
+.external-link:hover {
+  text-decoration: underline;
+  color: var(--brand-hover);
+}

@@ -40,10 +40,11 @@ export function diplomaticSets(homeId, countriesDict) {
 }
 
 /**
- * Determines the diplomatic relationship label.
+ * Determines the diplomatic relationship label, with manual overrides taking precedence.
  */
-export function getRelationshipLabel(countryId, homeId, { friends, enemies, eoe }) {
+export function getRelationshipLabel(countryId, homeId, { friends, enemies, eoe }, overrides = {}) {
     if (countryId === homeId) return "casa";
+    if (overrides[countryId]) return overrides[countryId];
     if (friends.has(countryId)) return "amico";
     if (enemies.has(countryId)) return "nemico";
     if (eoe.has(countryId)) return "nemico del nemico";
@@ -86,7 +87,7 @@ function isRegionEligible(ownerRel, holderRel) {
 /**
  * Calculates strategic targets (pushing, ready, warning) for the resistance.
  */
-export function calculateResistanceTargets(regionsDict, countriesDict, homeId) {
+export function calculateResistanceTargets(regionsDict, countriesDict, homeId, overrides = {}) {
     if (!homeId) return { pushing: [], ready: [], warning: [] };
 
     const diplomacy = diplomaticSets(homeId, countriesDict);
@@ -101,8 +102,8 @@ export function calculateResistanceTargets(regionsDict, countriesDict, homeId) {
         const holderId = region.country;
         const ownerId = region.initialCountry;
         
-        const holderRel = getRelationshipLabel(holderId, homeId, diplomacy);
-        const ownerRel = getRelationshipLabel(ownerId, homeId, diplomacy);
+        const holderRel = getRelationshipLabel(holderId, homeId, diplomacy, overrides);
+        const ownerRel = getRelationshipLabel(ownerId, homeId, diplomacy, overrides);
 
         const cur = region.resistance || 0;
         const top = region.resistanceMax || 0;
@@ -128,9 +129,11 @@ export function calculateResistanceTargets(regionsDict, countriesDict, homeId) {
             manca: Math.round(top - cur),
             percent,
             owner: countriesDict[ownerId]?.name || "Sconosciuto",
+            ownerId,
             ownerCode: countriesDict[ownerId]?.code || "",
             ownerRel,
             holder: countriesDict[holderId]?.name || "Sconosciuto",
+            holderId,
             holderCode: countriesDict[holderId]?.code || "",
             holderRel,
             full: cur >= top,
@@ -150,4 +153,33 @@ export function calculateResistanceTargets(regionsDict, countriesDict, homeId) {
         ready: candidates.filter(c => c.full),
         warning: warning.sort((a, b) => b.percent - a.percent)
     };
+}
+
+/**
+ * Returns a grouped dictionary of all countries by their relationship to homeId.
+ */
+export function getAllCountryRelationships(countriesDict, homeId, overrides = {}) {
+    if (!homeId) return { amico: [], nemico: [], 'nemico del nemico': [], neutrale: [] };
+    
+    const diplomacy = diplomaticSets(homeId, countriesDict);
+    const groups = {
+        amico: [],
+        nemico: [],
+        'nemico del nemico': [],
+        neutrale: []
+    };
+
+    Object.values(countriesDict).forEach(c => {
+        if (c._id === homeId) return;
+        const rel = getRelationshipLabel(c._id, homeId, diplomacy, overrides);
+        if (groups[rel]) {
+            groups[rel].push(c);
+        }
+    });
+
+    Object.values(groups).forEach(list => {
+        list.sort((a, b) => a.name.localeCompare(b.name));
+    });
+
+    return groups;
 }
