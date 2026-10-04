@@ -1,185 +1,135 @@
 /**
- * Extracts friends, enemies, and enemies of enemies for a given country.
+ * Extracts sets of diplomatic friends, enemies, and enemies-of-enemies
+ * based on dynamic configuration rules and manual overrides.
  */
-export function diplomaticSets(homeId, countriesDict) {
+export function diplomaticSets(homeId, countriesDict, config = {}) {
     const home = countriesDict[homeId] || {};
-    const bloc = home.allianceId;
+    const rules = config.rules || {};
+    const manualCountries = config.manualCountries || {};
+    const manualCoalitions = config.manualCoalitions || {};
 
-    const friends = new Set(home.allies || []);
-    (home.defensivePacts || []).forEach(p => friends.add(p));
-    
-    if (bloc) {
+    let friends = new Set();
+    let enemies = new Set();
+    let eoe = new Set();
+
+    // 1. Automatic Rules
+    if (rules.amici_allies !== false) {
+        (home.allies || []).forEach(p => friends.add(p));
+    }
+    if (rules.amici_dp !== false) {
+        (home.defensivePacts || []).forEach(p => friends.add(p));
+    }
+    if (rules.amici_coalition !== false && home.allianceId) {
         Object.values(countriesDict).forEach(c => {
-            if (c.allianceId === bloc) friends.add(c._id);
+            if (c.allianceId === home.allianceId) friends.add(c._id);
         });
     }
-    friends.delete(homeId);
 
-    const rawEnemies = new Set(home.warsWith || []);
-    if (home.enemy) rawEnemies.add(home.enemy);
-    
-    const enemies = new Set();
-    rawEnemies.forEach(e => {
-        if (!friends.has(e) && e !== homeId) enemies.add(e);
-    });
+    if (rules.nemici_wars !== false) {
+        (home.warsWith || []).forEach(w => enemies.add(w));
+    }
+    if (rules.nemici_ne !== false && home.enemy) {
+        enemies.add(home.enemy);
+    }
 
-    const eoe = new Set();
+    // EoE based on computed enemies
     enemies.forEach(e => {
         const eCountry = countriesDict[e] || {};
-        (eCountry.warsWith || []).forEach(ww => eoe.add(ww));
+        if (rules.eoe_wars !== false) {
+            (eCountry.warsWith || []).forEach(ww => eoe.add(ww));
+        }
+        if (rules.eoe_ne !== false) {
+            Object.values(countriesDict).forEach(c => {
+                if (c.enemy === e) eoe.add(c._id);
+            });
+        }
+    });
+
+    // 2. Manual Coalitions
+    Object.entries(manualCoalitions).forEach(([coalId, bucket]) => {
         Object.values(countriesDict).forEach(c => {
-            if (c.enemy === e) eoe.add(c._id);
+            if (c.allianceId === coalId) {
+                if (bucket === 'amico') friends.add(c._id);
+                if (bucket === 'nemico') enemies.add(c._id);
+                if (bucket === 'nemico del nemico') eoe.add(c._id);
+                if (bucket === 'neutrale') {
+                    friends.delete(c._id); enemies.delete(c._id); eoe.delete(c._id);
+                }
+            }
         });
     });
 
+    // 3. Manual Countries (Highest Precedence)
+    Object.entries(manualCountries).forEach(([cId, bucket]) => {
+        if (bucket === 'amico') { friends.add(cId); enemies.delete(cId); eoe.delete(cId); }
+        if (bucket === 'nemico') { enemies.add(cId); friends.delete(cId); eoe.delete(cId); }
+        if (bucket === 'nemico del nemico') { eoe.add(cId); friends.delete(cId); enemies.delete(cId); }
+        if (bucket === 'neutrale') { friends.delete(cId); enemies.delete(cId); eoe.delete(cId); }
+    });
+
+    // Precedence cleanup
     friends.forEach(f => eoe.delete(f));
     enemies.forEach(e => eoe.delete(e));
     eoe.delete(homeId);
+    friends.delete(homeId);
+    enemies.delete(homeId);
 
     return { friends, enemies, eoe };
 }
 
-/**
- * Determines the diplomatic relationship label, with manual overrides taking precedence.
- */
-export function getRelationshipLabel(countryId, homeId, { friends, enemies, eoe }, overrides = {}) {
+export function getRelationshipLabel(countryId, homeId, { friends, enemies, eoe }, config = {}) {
     if (countryId === homeId) return "casa";
-    if (overrides[countryId]) return overrides[countryId];
+    const manual = config.manualCountries || {};
+    if (manual[countryId]) return manual[countryId];
+    
     if (friends.has(countryId)) return "amico";
     if (enemies.has(countryId)) return "nemico";
     if (eoe.has(countryId)) return "nemico del nemico";
     return "neutrale";
 }
 
-/**
- * Determines the tier (fascia) for a target based on who owns the region.
- * 1: Friends
- * 2: Enemies of Enemies
- * 3: Neutrals
- */
-function determineTier(ownerRel) {
-    if (ownerRel === "amico") return 1;
-    if (ownerRel === "nemico del nemico") return 2;
-    return 3; // Neutral
-}
-
-/**
- * Determines a secondary priority score based on who currently holds the region.
- * We prioritize freeing regions from enemies (0) over neutral/allies.
- */
-function determineHoldScore(holderRel) {
-    if (holderRel === "nemico") return 0;
-    if (holderRel === "nemico del nemico") return 2;
-    return 1;
-}
-
-/**
- * Validates if a region should be pushed based on strict inclusion rules.
- */
-function isRegionEligible(ownerRel, holderRel) {
-    if (holderRel === "amico") return false;
-    if (ownerRel === "nemico" || ownerRel === "casa") return false;
-    if (ownerRel === "neutrale" && holderRel !== "nemico") return false;
-    if (ownerRel === "nemico del nemico" && holderRel === "nemico del nemico") return false;
-    return true;
-}
-
-/**
- * Calculates strategic targets (pushing, ready, warning) for the resistance.
- */
-export function calculateResistanceTargets(regionsDict, countriesDict, homeId, overrides = {}) {
+export function calculateResistanceTargets(regionsDict, countriesDict, homeId, config = {}) {
     if (!homeId) return { pushing: [], ready: [], warning: [] };
 
-    const diplomacy = diplomaticSets(homeId, countriesDict);
+    const diplomacy = diplomaticSets(homeId, countriesDict, config);
     const occupied = Object.values(regionsDict).filter(
         r => r.country && r.initialCountry && r.country !== r.initialCountry
     );
 
-    const warning = [];
     const candidates = [];
-
     occupied.forEach(region => {
         const holderId = region.country;
         const ownerId = region.initialCountry;
         
-        const holderRel = getRelationshipLabel(holderId, homeId, diplomacy, overrides);
-        const ownerRel = getRelationshipLabel(ownerId, homeId, diplomacy, overrides);
+        const holderRel = getRelationshipLabel(holderId, homeId, diplomacy, config);
+        const ownerRel = getRelationshipLabel(ownerId, homeId, diplomacy, config);
 
         const cur = region.resistance || 0;
         const top = region.resistanceMax || 0;
-        const percent = top ? Math.floor((1000 * cur / top)) / 10 : 0;
+        
+        // Push only if: owner is amico AND holder is nemico (or nemico del nemico)
+        const isPushable = ownerRel === "amico" && (holderRel === "nemico" || holderRel === "nemico del nemico");
 
-        if (holderId === homeId) {
-            warning.push({
+        if (isPushable) {
+            const percent = top > 0 ? ((cur / top) * 100).toFixed(1) : 0;
+            candidates.push({
                 regionId: region._id,
                 name: region.name,
-                percent: top ? Math.round((100 * cur / top) * 10) / 10 : 0,
+                manca: Math.round(top - cur),
+                percent,
                 owner: countriesDict[ownerId]?.name || "Sconosciuto",
-                ownerRel
+                ownerId,
+                ownerCode: countriesDict[ownerId]?.code || "",
+                ownerRel,
+                holder: countriesDict[holderId]?.name || "Sconosciuto",
+                holderId,
+                holderCode: countriesDict[holderId]?.code || "",
+                holderRel,
+                full: cur >= top,
             });
-            return;
-        }
-
-        if (!isRegionEligible(ownerRel, holderRel)) return;
-
-        candidates.push({
-            fascia: determineTier(ownerRel),
-            regionId: region._id,
-            name: region.name,
-            manca: Math.round(top - cur),
-            percent,
-            owner: countriesDict[ownerId]?.name || "Sconosciuto",
-            ownerId,
-            ownerCode: countriesDict[ownerId]?.code || "",
-            ownerRel,
-            holder: countriesDict[holderId]?.name || "Sconosciuto",
-            holderId,
-            holderCode: countriesDict[holderId]?.code || "",
-            holderRel,
-            full: cur >= top,
-            holdScore: determineHoldScore(holderRel),
-            lastContribution: region.lastResistanceContributionAt
-        });
-    });
-
-    candidates.sort((a, b) => {
-        if (a.fascia !== b.fascia) return a.fascia - b.fascia;
-        if (a.holdScore !== b.holdScore) return a.holdScore - b.holdScore;
-        return a.manca - b.manca;
-    });
-
-    return {
-        pushing: candidates.filter(c => !c.full),
-        ready: candidates.filter(c => c.full),
-        warning: warning.sort((a, b) => b.percent - a.percent)
-    };
-}
-
-/**
- * Returns a grouped dictionary of all countries by their relationship to homeId.
- */
-export function getAllCountryRelationships(countriesDict, homeId, overrides = {}) {
-    if (!homeId) return { amico: [], nemico: [], 'nemico del nemico': [], neutrale: [] };
-    
-    const diplomacy = diplomaticSets(homeId, countriesDict);
-    const groups = {
-        amico: [],
-        nemico: [],
-        'nemico del nemico': [],
-        neutrale: []
-    };
-
-    Object.values(countriesDict).forEach(c => {
-        if (c._id === homeId) return;
-        const rel = getRelationshipLabel(c._id, homeId, diplomacy, overrides);
-        if (groups[rel]) {
-            groups[rel].push(c);
         }
     });
 
-    Object.values(groups).forEach(list => {
-        list.sort((a, b) => a.name.localeCompare(b.name));
-    });
-
-    return groups;
+    candidates.sort((a, b) => a.manca - b.manca);
+    return { pushing: candidates, ready: [], warning: [] };
 }

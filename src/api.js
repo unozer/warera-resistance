@@ -1,5 +1,6 @@
 const CACHE_TTL = {
   COUNTRIES: 1000 * 60 * 60 * 24, // 24 hours
+  COALITIONS: 1000 * 60 * 60 * 24, // 24 hours
   REGIONS: 1000 * 30, // 30 seconds
 };
 
@@ -38,5 +39,10 @@ export const fetchCountries = async () => {
 
 export const fetchRegions = async () => {
   const data = await fetchWithCache('https://api2.warera.io/trpc/region.getRegionsObject', 'warera_regions', CACHE_TTL.REGIONS);
+  return data || {};
+};
+
+export const fetchCoalitions = async () => {
+  const data = await fetchWithCache('https://api2.warera.io/trpc/coalition.getCoalitionsObject', 'warera_coalitions', CACHE_TTL.COALITIONS);
   return data || {};
 };

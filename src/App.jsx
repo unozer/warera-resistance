@@ -4,7 +4,7 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import { ResistanceTable } from './components/ResistanceTable';
 import { CountrySelect } from './components/CountrySelect';
 import { SettingsPanel } from './components/SettingsPanel';
-import { FistIcon } from './components/Icons';
+import { FistIcon, XIcon } from './components/Icons';
 import './App.css';
 
 const SettingsIcon = () => (
@@ -52,9 +52,9 @@ function App() {
               <button 
                 className={`btn-icon ${showSettings ? 'active' : ''}`}
                 onClick={() => setShowSettings(!showSettings)}
-                title="Impostazioni Diplomazia"
+                title={showSettings ? "Chiudi Impostazioni" : "Impostazioni Diplomazia"}
               >
-                <SettingsIcon />
+                {showSettings ? <XIcon /> : <SettingsIcon />}
               </button>
             </div>
             

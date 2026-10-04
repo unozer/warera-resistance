@@ -1,25 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Flag } from './Flag';
-import { getAllCountryRelationships } from '../logic';
-
-const EXPLANATIONS = {
-  amico: {
-    title: "Amici",
-    desc: "Nazioni con cui condividiamo un'Alleanza o un Patto Difensivo attivo."
-  },
-  nemico: {
-    title: "Nemici",
-    desc: "Nazioni con cui siamo in guerra attiva o impostate come Nemico Naturale."
-  },
-  'nemico del nemico': {
-    title: "Nemici dei Nemici",
-    desc: "Nazioni in guerra o nemiche dei nostri nemici."
-  },
-  neutrale: {
-    title: "Neutrali",
-    desc: "Tutte le altre nazioni."
-  }
-};
 
 const ExternalLink = ({ type, id, children, className }) => (
   <a 
@@ -32,78 +12,151 @@ const ExternalLink = ({ type, id, children, className }) => (
   </a>
 );
 
-export function SettingsPanel({ countries, homeId, overrides, setOverrides }) {
-  if (!countries || countries.length === 0) return null;
+export function SettingsPanel({ countries, coalitions, overrides, setOverrides }) {
+  const [newCountry, setNewCountry] = useState({});
+  const [newCoalition, setNewCoalition] = useState({});
 
-  const countriesDict = countries.reduce((acc, c) => ({ ...acc, [c._id]: c }), {});
-  const groups = getAllCountryRelationships(countriesDict, homeId, overrides);
+  const rules = overrides.rules || {};
+  const manualCountries = overrides.manualCountries || {};
+  const manualCoalitions = overrides.manualCoalitions || {};
 
-  const handleOverride = (countryId, newRel) => {
+  const toggleRule = (ruleKey) => {
+    setOverrides(prev => ({
+      ...prev,
+      rules: {
+        ...(prev.rules || {}),
+        [ruleKey]: prev.rules ? !prev.rules[ruleKey] : false // Defaults to true if undefined
+      }
+    }));
+  };
+
+  const addManualCountry = (bucket) => {
+    const cid = newCountry[bucket];
+    if (!cid) return;
+    setOverrides(prev => ({
+      ...prev,
+      manualCountries: { ...(prev.manualCountries || {}), [cid]: bucket }
+    }));
+    setNewCountry(p => ({ ...p, [bucket]: '' }));
+  };
+
+  const removeManualCountry = (cid) => {
     setOverrides(prev => {
       const next = { ...prev };
-      next[countryId] = newRel;
+      const nextMC = { ...next.manualCountries };
+      delete nextMC[cid];
+      next.manualCountries = nextMC;
       return next;
     });
   };
 
-  const clearOverride = (countryId) => {
+  const addManualCoalition = (bucket) => {
+    const coId = newCoalition[bucket];
+    if (!coId) return;
+    setOverrides(prev => ({
+      ...prev,
+      manualCoalitions: { ...(prev.manualCoalitions || {}), [coId]: bucket }
+    }));
+    setNewCoalition(p => ({ ...p, [bucket]: '' }));
+  };
+
+  const removeManualCoalition = (coId) => {
     setOverrides(prev => {
       const next = { ...prev };
-      delete next[countryId];
+      const nextMC = { ...next.manualCoalitions };
+      delete nextMC[coId];
+      next.manualCoalitions = nextMC;
       return next;
     });
   };
 
-  const renderGroup = (key, badgeClass) => {
-    const list = groups[key];
-    const { title, desc } = EXPLANATIONS[key];
+  const isChecked = (key) => rules[key] !== false; // true by default
+
+  const renderSection = (bucket, title, badgeClass, rulesConfig) => {
+    const bucketCountries = Object.entries(manualCountries).filter(([id, b]) => b === bucket);
+    const bucketCoalitions = Object.entries(manualCoalitions).filter(([id, b]) => b === bucket);
 
     return (
-      <div key={key} className="settings-section">
+      <div className="settings-section">
         <div className="settings-section-header">
           <h3 className={`badge ${badgeClass}`}>{title}</h3>
-          <p className="settings-desc">{desc}</p>
         </div>
-        
-        <div className="settings-list">
-          {list.length === 0 ? (
-            <div className="settings-empty">Nessuna nazione in questa categoria.</div>
-          ) : (
-            list.map(c => (
-              <div key={c._id} className="settings-item">
-                <div className="settings-item-country">
-                  <Flag code={c.code} />
-                  <ExternalLink type="country" id={c._id}>
-                    {c.name}
-                  </ExternalLink>
-                  {overrides[c._id] === key && (
-                    <span className="override-badge" title="Forzato manualmente">⚙️ manuale</span>
-                  )}
-                </div>
-                
-                <select 
-                  className="settings-override-select"
-                  value={key}
-                  onChange={(e) => {
-                    // Se rimetto al default, elimino l'override? Non posso sapere il default qui senza ricalcolare.
-                    // Sovrascrivo e basta.
-                    handleOverride(c._id, e.target.value);
-                  }}
-                >
-                  <option value="amico">Sposta in Amici</option>
-                  <option value="nemico">Sposta in Nemici</option>
-                  <option value="nemico del nemico">Sposta in Nemici dei Nemici</option>
-                  <option value="neutrale">Sposta in Neutrali</option>
-                </select>
-                
-                {overrides[c._id] && (
-                  <button className="settings-btn-clear" onClick={() => clearOverride(c._id)}>
-                    Resetta
-                  </button>
-                )}
-              </div>
-            ))
-          )}
+
+        {rulesConfig && rulesConfig.length > 0 && (
+          <div className="settings-block">
+            <h4>Regole Automatiche</h4>
+            <div className="settings-rules">
+              {rulesConfig.map(r => (
+                <label key={r.key} className="settings-rule-label">
+                  <input 
+                    type="checkbox" 
+                    checked={isChecked(r.key)} 
+                    onChange={() => toggleRule(r.key)} 
+                  />
+                  {r.label}
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="settings-block">
+          <h4>Coalizioni {title} (Manuali)</h4>
+          <ul className="settings-manual-list">
+            {bucketCoalitions.map(([coId]) => (
+              <li key={coId}>
+                <span>{coalitions[coId]?.name || `Coalizione ${coId}`}</span>
+                <button className="settings-btn-clear" onClick={() => removeManualCoalition(coId)}>X</button>
+              </li>
+            ))}
+            {bucketCoalitions.length === 0 && <li className="settings-empty-li">Nessuna coalizione aggiunta manualmente.</li>}
+          </ul>
+          <div className="settings-add-row">
+            <select 
+              value={newCoalition[bucket] || ''} 
+              onChange={e => setNewCoalition(p => ({ ...p, [bucket]: e.target.value }))}
+              className="settings-select"
+            >
+              <option value="">-- Seleziona Coalizione --</option>
+              {Object.values(coalitions).map(c => (
+                <option key={c._id} value={c._id}>{c.name}</option>
+              ))}
+            </select>
+            <button className="settings-btn-add" onClick={() => addManualCoalition(bucket)}>Aggiungi</button>
+          </div>
+        </div>
+
+        <div className="settings-block">
+          <h4>Nazioni {title} (Manuali)</h4>
+          <ul className="settings-manual-list">
+            {bucketCountries.map(([cId]) => {
+              const c = countries.find(x => x._id === cId);
+              if (!c) return null;
+              return (
+                <li key={cId}>
+                  <div className="settings-item-country">
+                    <Flag code={c.code} />
+                    <ExternalLink type="country" id={c._id}>{c.name}</ExternalLink>
+                  </div>
+                  <button className="settings-btn-clear" onClick={() => removeManualCountry(cId)}>X</button>
+                </li>
+              );
+            })}
+            {bucketCountries.length === 0 && <li className="settings-empty-li">Nessuna nazione aggiunta manualmente.</li>}
+          </ul>
+          <div className="settings-add-row">
+            <select 
+              value={newCountry[bucket] || ''} 
+              onChange={e => setNewCountry(p => ({ ...p, [bucket]: e.target.value }))}
+              className="settings-select"
+            >
+              <option value="">-- Seleziona Nazione --</option>
+              {countries.map(c => (
+                <option key={c._id} value={c._id}>{c.name}</option>
+              ))}
+            </select>
+            <button className="settings-btn-add" onClick={() => addManualCountry(bucket)}>Aggiungi</button>
+          </div>
         </div>
       </div>
     );
@@ -113,14 +166,27 @@ export function SettingsPanel({ countries, homeId, overrides, setOverrides }) {
     <div className="settings-panel">
       <h2>Impostazioni Diplomazia</h2>
       <p className="subtitle">
-        Qui puoi forzare manualmente le relazioni diplomatiche. 
-        Le modifiche manuali (⚙️) sovrascriveranno le regole automatiche e verranno salvate nel tuo browser.
+        Scegli quali metriche di gioco determinano le relazioni, e aggiungi manualmente coalizioni o nazioni specifiche.
+        Le impostazioni manuali hanno sempre priorità su quelle automatiche.
       </p>
 
-      {renderGroup('amico', 'badge-amico')}
-      {renderGroup('nemico', 'badge-nemico')}
-      {renderGroup('nemico del nemico', 'badge-nemico-del-nemico')}
-      {renderGroup('neutrale', 'badge-neutrale')}
+      {renderSection('amico', 'Amici', 'badge-amico', [
+        { key: 'amici_allies', label: 'Alleanze Dirette' },
+        { key: 'amici_dp', label: 'Patti Difensivi' },
+        { key: 'amici_coalition', label: 'Stessa Coalizione' }
+      ])}
+      
+      {renderSection('nemico', 'Nemici', 'badge-nemico', [
+        { key: 'nemici_wars', label: 'Guerre Attive' },
+        { key: 'nemici_ne', label: 'Nemico Naturale' }
+      ])}
+      
+      {renderSection('nemico del nemico', 'Nemici dei Nemici', 'badge-nemico-del-nemico', [
+        { key: 'eoe_wars', label: 'Nazioni in guerra contro i nostri Nemici' },
+        { key: 'eoe_ne', label: 'Nazioni aventi i nostri Nemici come Nemico Naturale' }
+      ])}
+      
+      {renderSection('neutrale', 'Neutrali', 'badge-neutrale', null)}
     </div>
   );
 }
