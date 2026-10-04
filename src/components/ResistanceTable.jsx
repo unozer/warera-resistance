@@ -6,7 +6,7 @@ const getBadgeClass = (rel) => {
   if (rel === 'casa') return 'badge-casa';
   if (rel === 'alleato') return 'badge-alleato';
   if (rel === 'nemico') return 'badge-nemico';
-  if (rel === 'nemico del nemico') return 'badge-nemico-del-nemico';
+  if (rel === 'nemico comune') return 'badge-nemico-comune';
   return 'badge-neutrale';
 };
 

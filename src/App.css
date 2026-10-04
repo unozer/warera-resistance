@@ -206,7 +206,7 @@ body {
 .badge-casa { background: var(--border-color); color: var(--text-main); }
 .badge-alleato { background: var(--success-bg); color: var(--success-color); border: 1px solid rgba(16,185,129,0.2); }
 .badge-nemico { background: var(--danger-bg); color: var(--danger-color); border: 1px solid rgba(239,68,68,0.2); }
-.badge-nemico-del-nemico { background: var(--warning-bg); color: var(--warning-color); border: 1px solid rgba(245,158,11,0.2); }
+.badge-nemico-comune { background: var(--warning-bg); color: var(--warning-color); border: 1px solid rgba(245,158,11,0.2); }
 .badge-neutrale { background: var(--neutral-bg); color: var(--neutral-color); border: 1px solid rgba(203,213,225,0.2); }
 
 /* Settings Panel & Top Bar */

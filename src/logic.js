@@ -48,7 +48,7 @@ export function diplomaticSets(homeId, countriesDict, config = {}) {
             if (c.allianceId === coalId) {
                 if (bucket === 'alleato' || bucket === 'amico') friends.add(c._id);
                 if (bucket === 'nemico') enemies.add(c._id);
-                if (bucket === 'nemico del nemico') eoe.add(c._id);
+                if (bucket === 'nemico comune' || bucket === 'nemico del nemico') eoe.add(c._id);
                 if (bucket === 'neutrale') {
                     friends.delete(c._id); enemies.delete(c._id); eoe.delete(c._id);
                 }
@@ -60,7 +60,7 @@ export function diplomaticSets(homeId, countriesDict, config = {}) {
     Object.entries(manualCountries).forEach(([cId, bucket]) => {
         if (bucket === 'alleato' || bucket === 'amico') { friends.add(cId); enemies.delete(cId); eoe.delete(cId); }
         if (bucket === 'nemico') { enemies.add(cId); friends.delete(cId); eoe.delete(cId); }
-        if (bucket === 'nemico del nemico') { eoe.add(cId); friends.delete(cId); enemies.delete(cId); }
+        if (bucket === 'nemico comune' || bucket === 'nemico del nemico') { eoe.add(cId); friends.delete(cId); enemies.delete(cId); }
         if (bucket === 'neutrale') { friends.delete(cId); enemies.delete(cId); eoe.delete(cId); }
     });
 
@@ -77,11 +77,14 @@ export function diplomaticSets(homeId, countriesDict, config = {}) {
 export function getRelationshipLabel(countryId, homeId, { friends, enemies, eoe }, config = {}) {
     if (countryId === homeId) return "casa";
     const manual = config.manualCountries || {};
-    if (manual[countryId]) return manual[countryId];
+    if (manual[countryId]) {
+        if (manual[countryId] === 'nemico del nemico') return 'nemico comune';
+        return manual[countryId];
+    }
     
     if (friends.has(countryId)) return "alleato";
     if (enemies.has(countryId)) return "nemico";
-    if (eoe.has(countryId)) return "nemico del nemico";
+    if (eoe.has(countryId)) return "nemico comune";
     return "neutrale";
 }
 
@@ -92,19 +95,19 @@ function isRegionEligible(ownerRel, holderRel) {
     if (holderRel === "alleato") return false;
     if (ownerRel === "nemico" || ownerRel === "casa") return false;
     if (ownerRel === "neutrale" && holderRel !== "nemico") return false;
-    if (ownerRel === "nemico del nemico" && holderRel === "nemico del nemico") return false;
+    if (ownerRel === "nemico comune" && holderRel === "nemico comune") return false;
     return true;
 }
 
 function determineTier(ownerRel) {
     if (ownerRel === "alleato") return 1;
-    if (ownerRel === "nemico del nemico") return 2;
+    if (ownerRel === "nemico comune") return 2;
     return 3;
 }
 
 function determineHoldScore(holderRel) {
     if (holderRel === "nemico") return 0;
-    if (holderRel === "nemico del nemico") return 2;
+    if (holderRel === "nemico comune") return 2;
     return 1;
 }
 

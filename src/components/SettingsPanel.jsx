@@ -77,8 +77,8 @@ export function SettingsPanel({ countries, coalitions, overrides, setOverrides }
   const isChecked = (key) => rules[key] !== false; // true by default
 
   const renderSection = (bucket, title, badgeClass, labels, rulesConfig) => {
-    const bucketCountries = Object.entries(manualCountries).filter(([id, b]) => b === bucket || (bucket === 'alleato' && b === 'amico'));
-    const bucketCoalitions = Object.entries(manualCoalitions).filter(([id, b]) => b === bucket || (bucket === 'alleato' && b === 'amico'));
+    const bucketCountries = Object.entries(manualCountries).filter(([id, b]) => b === bucket || (bucket === 'alleato' && b === 'amico') || (bucket === 'nemico comune' && b === 'nemico del nemico'));
+    const bucketCoalitions = Object.entries(manualCoalitions).filter(([id, b]) => b === bucket || (bucket === 'alleato' && b === 'amico') || (bucket === 'nemico comune' && b === 'nemico del nemico'));
 
     return (
       <div className="settings-section">
@@ -180,7 +180,7 @@ export function SettingsPanel({ countries, coalitions, overrides, setOverrides }
         { key: 'nemici_ne', label: 'Nemico Giurato' }
       ])}
       
-      {renderSection('nemico del nemico', 'Nemici dei Nemici', 'badge-nemico-del-nemico', { alliance: 'Alleanze Nemiche dei Nemici', country: 'Nazioni Nemiche dei Nemici' }, [
+      {renderSection('nemico comune', 'Nemici Comuni', 'badge-nemico-comune', { alliance: 'Alleanze Nemiche Comuni', country: 'Nazioni Nemiche Comuni' }, [
         { key: 'eoe_wars', label: 'Nazioni in guerra contro i nostri Nemici' },
         { key: 'eoe_ne', label: 'Nazioni aventi i nostri Nemici come Nemico Giurato' }
       ])}
