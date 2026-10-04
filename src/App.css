@@ -1,27 +1,23 @@
 :root {
-  /* Lunombrance-8 Palette */
-  --c1: #1c000e;
-  --c2: #351f35;
-  --c3: #4a2366;
-  --c4: #523a79;
-  --c5: #599c9c;
-  --c6: #7acba3;
-  --c7: #bfdebf;
-  --c8: #effee1;
+  /* Modern Dark UI Palette (Slate & Blue) */
+  --bg-color: #0f172a;       /* slate-900 */
+  --card-bg: #1e293b;        /* slate-800 */
+  --border-color: #334155;   /* slate-700 */
+  --border-hover: #475569;   /* slate-600 */
+  --brand-color: #3b82f6;    /* blue-500 */
+  --brand-hover: #2563eb;    /* blue-600 */
+  --text-main: #f8fafc;      /* slate-50 */
+  --text-muted: #94a3b8;     /* slate-400 */
 
-  /* App Variables */
-  --bg-color: #0a0005; /* Deep, dark Material-style base */
-  --card-bg: var(--c1); /* Elevated surface is slightly lighter */
-  --border-color: var(--c2);
-  --border-hover: var(--c4);
-  --brand-color: var(--c5);
-  --text-main: var(--c8);
-  --text-muted: var(--c7);
-
-  /* Semantic Colors adapted to fit the tone */
-  --success-color: var(--c6); /* Mint from palette */
-  --danger-color: #d15c7a;    /* Adapted rose/red */
-  --warning-color: #e5b567;   /* Adapted gold/orange */
+  /* Semantic Colors */
+  --success-color: #10b981;  /* emerald-500 */
+  --success-bg: rgba(16, 185, 129, 0.1);
+  --danger-color: #ef4444;   /* red-500 */
+  --danger-bg: rgba(239, 68, 68, 0.1);
+  --warning-color: #f59e0b;  /* amber-500 */
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --neutral-color: #cbd5e1;  /* slate-300 */
+  --neutral-bg: rgba(203, 213, 225, 0.1);
 }
 
 * {
@@ -30,14 +26,15 @@
 
 body {
   margin: 0;
-  font-family: 'Consolas', 'Courier New', 'Monaco', monospace;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-color);
   color: var(--text-main);
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 .container {
-  max-width: 1000px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 2rem 1rem;
 }
@@ -48,20 +45,23 @@ body {
 }
 
 .header h1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 0 0 0.5rem 0;
-  color: var(--brand-color);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  font-size: 2rem;
+  color: var(--text-main);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  font-size: 2.2rem;
 }
 
 .card {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
 }
 
 .filters {
@@ -73,10 +73,9 @@ body {
   display: flex;
   align-items: center;
   gap: 1rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: var(--brand-color);
-  text-transform: uppercase;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
 .state-message {
@@ -84,13 +83,14 @@ body {
   padding: 3rem;
   color: var(--text-muted);
   background: var(--card-bg);
-  border: 2px dashed var(--border-color);
-  border-radius: 4px;
+  border: 1px dashed var(--border-color);
+  border-radius: 12px;
 }
 
 .state-message.error {
   color: var(--danger-color);
   border-color: var(--danger-color);
+  background: var(--danger-bg);
 }
 
 .table-responsive {
@@ -99,55 +99,54 @@ body {
 
 .data-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   text-align: left;
 }
 
 .data-table th, .data-table td {
-  padding: 0.75rem 1rem;
+  padding: 1rem 1rem;
   border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
 }
 
 .data-table th {
-  color: var(--brand-color);
-  font-weight: bold;
-  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.8rem;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   user-select: none;
-  transition: color 0.2s, background-color 0.2s;
-  border-bottom: 2px solid var(--border-hover);
+  transition: color 0.2s;
 }
 
 .data-table th:hover {
   color: var(--text-main);
-  background-color: var(--border-color);
 }
 
+.res-row {
+  transition: background-color 0.15s ease;
+}
 .res-row:hover {
-  background-color: rgba(74, 35, 102, 0.3); /* c3 with opacity */
-}
-
-.text-center {
-  text-align: center;
+  background-color: rgba(255, 255, 255, 0.03);
 }
 
 .res-manca {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .res-percent-bar {
   display: flex;
   align-items: center;
   position: relative;
-  height: 1.2rem;
-  background-color: var(--c1);
-  border: 1px solid var(--border-color);
-  border-radius: 2px;
+  height: 1.5rem;
+  background-color: var(--bg-color);
+  border-radius: 6px;
   overflow: hidden;
-  width: 100%;
-  min-width: 120px;
+  width: 120px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .res-percent-fill {
@@ -156,36 +155,56 @@ body {
   top: 0;
   height: 100%;
   background-color: var(--brand-color);
+  transition: width 0.3s ease;
 }
 
 .res-percent-text {
   position: relative;
   z-index: 1;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   padding: 0 0.5rem;
-  font-weight: bold;
-  color: var(--text-main);
-  text-shadow: 1px 1px 0px #000;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0px 1px 2px rgba(0,0,0,0.8);
 }
 
 .res-manca-pts {
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: var(--warning-color);
-}
-
-.res-rel-label {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.footer {
-  text-align: center;
-  margin-top: 3rem;
-  color: var(--text-muted);
   font-size: 0.85rem;
-  opacity: 0.8;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
+
+.country-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.country-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.country-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  width: fit-content;
+}
+
+.badge-casa { background: var(--border-color); color: var(--text-main); }
+.badge-amico { background: var(--success-bg); color: var(--success-color); border: 1px solid rgba(16,185,129,0.2); }
+.badge-nemico { background: var(--danger-bg); color: var(--danger-color); border: 1px solid rgba(239,68,68,0.2); }
+.badge-nemico-del-nemico { background: var(--warning-bg); color: var(--warning-color); border: 1px solid rgba(245,158,11,0.2); }
+.badge-neutrale { background: var(--neutral-bg); color: var(--neutral-color); border: 1px solid rgba(203,213,225,0.2); }
