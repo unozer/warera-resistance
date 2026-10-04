@@ -170,6 +170,22 @@ export function SettingsPanel({ countries, coalitions, overrides, setOverrides }
     <div className="settings-panel">
       <h2>Impostazioni Diplomazia</h2>
 
+      <div className="settings-section">
+        <div className="settings-section-header" style={{ marginBottom: '1rem' }}>
+          <h3>Filtri Globali</h3>
+        </div>
+        <div className="settings-block">
+          <label className="settings-rule-label">
+            <input 
+              type="checkbox" 
+              checked={isChecked('show_allied_held_by_me')} 
+              onChange={() => toggleRule('show_allied_held_by_me')} 
+            />
+            Mostra territori Alleati occupati dalla nostra Nazione (Es. Slovenia occupata dall'Italia)
+          </label>
+        </div>
+      </div>
+
       {renderSection('alleato', 'Alleati', 'badge-alleato', { alliance: 'Alleanze Alleate', country: 'Nazioni Alleate' }, [
         { key: 'amici_dp', label: 'Patti Difensivi' },
         { key: 'amici_coalition', label: 'Stessa Alleanza' }

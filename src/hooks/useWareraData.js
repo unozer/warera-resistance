@@ -9,7 +9,8 @@ const DEFAULT_CONFIG = {
     nemici_wars: true,
     nemici_ne: true,
     eoe_wars: true,
-    eoe_ne: true
+    eoe_ne: true,
+    show_allied_held_by_me: false,
   },
   manualCountries: {},
   manualCoalitions: {}
@@ -38,7 +39,7 @@ export function useWareraData(countryId, config = {}) {
         cList.forEach(c => {
           if (c.allianceId) {
             if (!coalDict[c.allianceId]) {
-              coalDict[c.allianceId] = { _id: c.allianceId, name: `Coalizione (${c.name})`, members: [] };
+              coalDict[c.allianceId] = { _id: c.allianceId, name: `Alleanza (${c.name})`, members: [] };
             }
             coalDict[c.allianceId].members.push(c.name);
           }
@@ -47,7 +48,7 @@ export function useWareraData(countryId, config = {}) {
         // Refine coalition names based on members
         Object.values(coalDict).forEach(coal => {
             const topMembers = coal.members.slice(0, 3).join(", ");
-            coal.name = `Coalizione [${topMembers}${coal.members.length > 3 ? '...' : ''}]`;
+            coal.name = `Alleanza [${topMembers}${coal.members.length > 3 ? '...' : ''}]`;
         });
         
         setCountries(cList);

@@ -91,8 +91,14 @@ export function getRelationshipLabel(countryId, homeId, { friends, enemies, eoe 
 /**
  * Validates if a region should be pushed based on strict inclusion rules.
  */
-function isRegionEligible(ownerRel, holderRel) {
+function isRegionEligible(ownerRel, holderRel, config) {
     if (holderRel === "alleato") return false;
+    
+    // Hide allied regions held by us (casa) unless explicitly enabled
+    if (ownerRel === "alleato" && holderRel === "casa" && config?.rules?.show_allied_held_by_me === false) {
+        return false;
+    }
+    
     if (ownerRel === "nemico" || ownerRel === "casa") return false;
     if (ownerRel === "neutrale" && holderRel !== "nemico") return false;
     if (ownerRel === "nemico comune" && holderRel === "nemico comune") return false;
@@ -132,7 +138,7 @@ export function calculateResistanceTargets(regionsDict, countriesDict, homeId, c
         
         const isNotFull = cur < top;
 
-        if (isNotFull && isRegionEligible(ownerRel, holderRel)) {
+        if (isNotFull && isRegionEligible(ownerRel, holderRel, config)) {
             const percent = top > 0 ? ((cur / top) * 100).toFixed(1) : 0;
             candidates.push({
                 fascia: determineTier(ownerRel),
