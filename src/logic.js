@@ -85,6 +85,29 @@ export function getRelationshipLabel(countryId, homeId, { friends, enemies, eoe 
     return "neutrale";
 }
 
+/**
+ * Validates if a region should be pushed based on strict inclusion rules.
+ */
+function isRegionEligible(ownerRel, holderRel) {
+    if (holderRel === "amico") return false;
+    if (ownerRel === "nemico" || ownerRel === "casa") return false;
+    if (ownerRel === "neutrale" && holderRel !== "nemico") return false;
+    if (ownerRel === "nemico del nemico" && holderRel === "nemico del nemico") return false;
+    return true;
+}
+
+function determineTier(ownerRel) {
+    if (ownerRel === "amico") return 1;
+    if (ownerRel === "nemico del nemico") return 2;
+    return 3;
+}
+
+function determineHoldScore(holderRel) {
+    if (holderRel === "nemico") return 0;
+    if (holderRel === "nemico del nemico") return 2;
+    return 1;
+}
+
 export function calculateResistanceTargets(regionsDict, countriesDict, homeId, config = {}) {
     if (!homeId) return { pushing: [], ready: [], warning: [] };
 
@@ -104,13 +127,13 @@ export function calculateResistanceTargets(regionsDict, countriesDict, homeId, c
         const cur = region.resistance || 0;
         const top = region.resistanceMax || 0;
         
-        // Push only if: owner is amico AND holder is nemico (or nemico del nemico)
-        const isPushable = ownerRel === "amico" && (holderRel === "nemico" || holderRel === "nemico del nemico");
         const isNotFull = cur < top;
 
-        if (isPushable && isNotFull) {
+        if (isNotFull && isRegionEligible(ownerRel, holderRel)) {
             const percent = top > 0 ? ((cur / top) * 100).toFixed(1) : 0;
             candidates.push({
+                fascia: determineTier(ownerRel),
+                holdScore: determineHoldScore(holderRel),
                 regionId: region._id,
                 name: region.name,
                 manca: Math.round(top - cur),
@@ -128,6 +151,11 @@ export function calculateResistanceTargets(regionsDict, countriesDict, homeId, c
         }
     });
 
-    candidates.sort((a, b) => a.manca - b.manca);
+    candidates.sort((a, b) => {
+        if (a.fascia !== b.fascia) return a.fascia - b.fascia;
+        if (a.holdScore !== b.holdScore) return a.holdScore - b.holdScore;
+        return a.manca - b.manca;
+    });
+    
     return { pushing: candidates, ready: [], warning: [] };
 }
