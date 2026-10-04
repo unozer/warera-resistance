@@ -1,8 +1,11 @@
+/**
+ * Extracts friends, enemies, and enemies of enemies for a given country.
+ */
 export function diplomaticSets(homeId, countriesDict) {
     const home = countriesDict[homeId] || {};
     const bloc = home.allianceId;
 
-    let friends = new Set(home.allies || []);
+    const friends = new Set(home.allies || []);
     (home.defensivePacts || []).forEach(p => friends.add(p));
     
     if (bloc) {
@@ -12,15 +15,15 @@ export function diplomaticSets(homeId, countriesDict) {
     }
     friends.delete(homeId);
 
-    let rawEnemies = new Set(home.warsWith || []);
+    const rawEnemies = new Set(home.warsWith || []);
     if (home.enemy) rawEnemies.add(home.enemy);
     
-    let enemies = new Set();
+    const enemies = new Set();
     rawEnemies.forEach(e => {
         if (!friends.has(e) && e !== homeId) enemies.add(e);
     });
 
-    let eoe = new Set();
+    const eoe = new Set();
     enemies.forEach(e => {
         const eCountry = countriesDict[e] || {};
         (eCountry.warsWith || []).forEach(ww => eoe.add(ww));
@@ -36,71 +39,101 @@ export function diplomaticSets(homeId, countriesDict) {
     return { friends, enemies, eoe };
 }
 
-function relLabel(cid, homeId, friends, enemies, eoe) {
-    if (cid === homeId) return "casa";
-    if (friends.has(cid)) return "amico";
-    if (enemies.has(cid)) return "nemico";
-    if (eoe.has(cid)) return "nemico del nemico";
+/**
+ * Determines the diplomatic relationship label.
+ */
+export function getRelationshipLabel(countryId, homeId, { friends, enemies, eoe }) {
+    if (countryId === homeId) return "casa";
+    if (friends.has(countryId)) return "amico";
+    if (enemies.has(countryId)) return "nemico";
+    if (eoe.has(countryId)) return "nemico del nemico";
     return "neutrale";
 }
 
+/**
+ * Determines the tier (fascia) for a target based on who owns the region.
+ * 1: Friends
+ * 2: Enemies of Enemies
+ * 3: Neutrals
+ */
+function determineTier(ownerRel) {
+    if (ownerRel === "amico") return 1;
+    if (ownerRel === "nemico del nemico") return 2;
+    return 3; // Neutral
+}
+
+/**
+ * Determines a secondary priority score based on who currently holds the region.
+ * We prioritize freeing regions from enemies (0) over neutral/allies.
+ */
+function determineHoldScore(holderRel) {
+    if (holderRel === "nemico") return 0;
+    if (holderRel === "nemico del nemico") return 2;
+    return 1;
+}
+
+/**
+ * Validates if a region should be pushed based on strict inclusion rules.
+ */
+function isRegionEligible(ownerRel, holderRel) {
+    if (holderRel === "amico") return false;
+    if (ownerRel === "nemico" || ownerRel === "casa") return false;
+    if (ownerRel === "neutrale" && holderRel !== "nemico") return false;
+    if (ownerRel === "nemico del nemico" && holderRel === "nemico del nemico") return false;
+    return true;
+}
+
+/**
+ * Calculates strategic targets (pushing, ready, warning) for the resistance.
+ */
 export function calculateResistanceTargets(regionsDict, countriesDict, homeId) {
     if (!homeId) return { pushing: [], ready: [], warning: [] };
 
-    const { friends, enemies, eoe } = diplomaticSets(homeId, countriesDict);
-    const occupied = Object.values(regionsDict).filter(r => r.country && r.initialCountry && r.country !== r.initialCountry);
+    const diplomacy = diplomaticSets(homeId, countriesDict);
+    const occupied = Object.values(regionsDict).filter(
+        r => r.country && r.initialCountry && r.country !== r.initialCountry
+    );
 
-    let warning = [];
-    let candidates = [];
+    const warning = [];
+    const candidates = [];
 
-    occupied.forEach(r => {
-        const top = r.resistanceMax || 0;
-        const cur = r.resistance || 0;
-        const holderId = r.country;
-        const ownerId = r.initialCountry;
+    occupied.forEach(region => {
+        const holderId = region.country;
+        const ownerId = region.initialCountry;
+        
+        const holderRel = getRelationshipLabel(holderId, homeId, diplomacy);
+        const ownerRel = getRelationshipLabel(ownerId, homeId, diplomacy);
 
-        const rh = relLabel(holderId, homeId, friends, enemies, eoe);
-        const ro = relLabel(ownerId, homeId, friends, enemies, eoe);
+        const cur = region.resistance || 0;
+        const top = region.resistanceMax || 0;
+        const percent = top ? Math.floor((1000 * cur / top)) / 10 : 0;
 
         if (holderId === homeId) {
             warning.push({
-                regionId: r._id,
-                name: r.name,
+                regionId: region._id,
+                name: region.name,
                 percent: top ? Math.round((100 * cur / top) * 10) / 10 : 0,
-                owner: (countriesDict[ownerId] || {}).name,
-                ownerRel: ro
+                owner: countriesDict[ownerId]?.name || "Sconosciuto",
+                ownerRel
             });
             return;
         }
 
-        if (rh === "amico") return;
-        if (ro === "nemico" || ro === "casa") return;
-        if (ro === "neutrale" && rh !== "nemico") return;
-        if (ro === "nemico del nemico" && rh === "nemico del nemico") return;
-
-        let fascia = 3;
-        if (ro === "amico") fascia = 1;
-        else if (ro === "nemico del nemico") fascia = 2;
-
-        let holdScore = 1;
-        if (rh === "nemico") holdScore = 0;
-        else if (rh === "nemico del nemico") holdScore = 2;
-
-        const manca = Math.round(top - cur);
+        if (!isRegionEligible(ownerRel, holderRel)) return;
 
         candidates.push({
-            fascia,
-            regionId: r._id,
-            name: r.name,
-            manca,
-            percent: top ? Math.floor((1000 * cur / top)) / 10 : 0,
-            owner: (countriesDict[ownerId] || {}).name,
-            ownerRel: ro,
-            holder: (countriesDict[holderId] || {}).name,
-            holderRel: rh,
+            fascia: determineTier(ownerRel),
+            regionId: region._id,
+            name: region.name,
+            manca: Math.round(top - cur),
+            percent,
+            owner: countriesDict[ownerId]?.name || "Sconosciuto",
+            ownerRel,
+            holder: countriesDict[holderId]?.name || "Sconosciuto",
+            holderRel,
             full: cur >= top,
-            holdScore,
-            lastContribution: r.lastResistanceContributionAt
+            holdScore: determineHoldScore(holderRel),
+            lastContribution: region.lastResistanceContributionAt
         });
     });
 
