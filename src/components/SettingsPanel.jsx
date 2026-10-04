@@ -23,7 +23,7 @@ const EXPLANATIONS = {
 
 const ExternalLink = ({ type, id, children, className }) => (
   <a 
-    href={`https://play.warera.com/${type}/${id}`} 
+    href={`https://app.warera.io/${type}/${id}`} 
     target="_blank" 
     rel="noreferrer"
     className={className || "external-link"}
